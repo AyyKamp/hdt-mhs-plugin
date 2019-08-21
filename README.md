@@ -4,6 +4,10 @@ A plugin for [Hearthstone Deck Tracker](https://hsdecktracker.net/) that opens t
 
 ![](docs/demo.gif)
 
+## Installation
+
+[See Here](https://github.com/AyyKamp/hdt-mhs-plugin/wiki/Installation)
+
 ## Using the plugin
 
 - Have some minions on the board
