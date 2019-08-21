@@ -109,8 +109,8 @@ namespace Mass_Hysteria_Simulator
             // Triggered when the user clicks your button in the plugin list
             if (Core.Game.IsMinionInPlay)
             {
-                //string BaseURL = "https://mass-hysteria-sim.now.sh/?";
-                string BaseURL = "http://localhost:8080/";
+                string BaseURL = "https://mass-hysteria-sim.now.sh/?";
+                // string BaseURL = "http://localhost:8080/";
                 string ExportString = "?";
 
                 try
