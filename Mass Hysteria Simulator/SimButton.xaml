@@ -1,10 +1,26 @@
-<UserControl x:Class="Mass_Hysteria_Simulator.SimButton"
+<controls:MetroWindow x:Class="Mass_Hysteria_Simulator.SimButton"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+        mc:Ignorable="d"
+        SizeToContent="Width"
+        Height="90px"
+        ShowMaxRestoreButton="False"
+        WindowTransitionsEnabled="False"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False" >
+    <UserControl
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" >
-    <Grid Background="#FF323232">
-        <Button x:Name="Button" HorizontalAlignment="Center" Margin="0,0,0,-31" Content="Simulate" VerticalAlignment="Center" Width="200" FontFamily="Consolas" Background="#FF323232" Foreground="White" BorderThickness="0" FontSize="20px" Click="HandleClick"/>
-    </Grid>
-</UserControl>
+        <Grid Background="#FF323232">
+            <Button x:Name="Button" HorizontalAlignment="Center" Content="Simulate" VerticalAlignment="Center" Width="200" FontFamily="Consolas" Background="#FF323232" Foreground="White" BorderThickness="0" FontSize="20px" Height="30px"/>
+        </Grid>
+    </UserControl>
+</controls:MetroWindow>
+    

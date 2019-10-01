@@ -1,57 +1,94 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 using System.Windows.Controls;
+using System.Windows.Forms;
+using System.Collections.Generic;
+
 using HearthDb.Enums;
+using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Hearthstone.Entities;
-using Hearthstone_Deck_Tracker.Enums.Hearthstone;
 using Hearthstone_Deck_Tracker.API;
-using Hearthstone_Deck_Tracker.LogReader;
-using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using Hearthstone_Deck_Tracker.Utility.HotKeys;
+
+using static HearthDb.CardIds;
 
 
 namespace Mass_Hysteria_Simulator
 {
     public class Mass_Hysteria_Simulator
     {
-        internal static void TurnStart(ActivePlayer player)
-        {
-        }
-
-        internal static void GameStart()
-        {
-        }
-
     }
 
     public class Mass_Hysteria_Simulator_Plugin : IPlugin
     {
-        public bool IsPoisonous(Entity Minion)
+        SimButton _button;
+
+        public void HandleClick(Object sender, EventArgs e)
         {
-            return Minion.Tags.TryGetValue(GameTag.POISONOUS, out int p) && p == 1;
+            OpenWebsite();
         }
 
-        public bool HasDivineShield(Entity Minion)
+        public void HandleLostFocus(Object sender, EventArgs e)
         {
-            return Minion.Tags.TryGetValue(GameTag.DIVINE_SHIELD, out int d) && d == 1;
+            Log.Info("Lost Focus");
+            if (_button != null)
+            {
+                _button.Hide();
+            }
         }
 
-        public void HandleStupidShit(Object sender, System.EventArgs e)
+        public void HandleGotFocus(Object sender, EventArgs e)
         {
-            Log.Info("asdklasdlkjdajd");
+            Log.Info("Got Focus");
+            if (_button != null)
+            {
+                _button.Show();
+            }
+        }
+
+        public void HandleCloseButton(Object sender, EventArgs e)
+        {
+            CloseButton();
         }
 
         public void ShowButton()
         {
             Log.Info("Showing Button");
-            SimButton button = new SimButton();
-            //button.Button.Click += HandleStupidShit;
-            Core.OverlayCanvas.Children.Add(button);
+
+            _button = new SimButton()
+            {
+                Owner = Core.OverlayWindow
+            };
+
+            _button.Button.Click += HandleClick;
+            _button.Closed += HandleCloseButton;
+
+            _button.Show();
+        }
+
+        public void HideButton()
+        {
+            Log.Info("Hiding Button");
+            _button.Hide();
+        }
+
+        public void CloseButton()
+        {
+            _button.Close();
+            _button = null;
+        }
+
+        public void ToggleButton()
+        {
+            if (_button == null)
+            {
+                ShowButton();
+            }
+            else
+            {
+                HideButton();
+            }
         }
 
         public string BoardToString(IEnumerable<Entity> Board)
@@ -61,35 +98,66 @@ namespace Mass_Hysteria_Simulator
 
             foreach (Entity CurrentMinion in Board)
             {
+
                 if (CurrentMinion.IsMinion && CurrentMinion.IsInPlay)
                 {
                     BoardString += CurrentMinion.Attack + "%2F" + CurrentMinion.Health;
 
-                    if (HasDivineShield(CurrentMinion))
+                    if (CurrentMinion.HasTag(GameTag.DIVINE_SHIELD))
                         BoardString += "d";
-                    if (IsPoisonous(CurrentMinion))
+
+                    if (CurrentMinion.HasTag(GameTag.POISONOUS))
                         BoardString += "p";
 
                     BoardString += "%20";
+
                 }
             }
             return BoardString;
         }
 
-        public void HandleAddToHand(Hearthstone_Deck_Tracker.Hearthstone.Card Card)
+        public void HandleAddToHand(Card CurrentCard)
         {
-            if (Card.Id == "TRL_258")
+            if (CurrentCard.Id == Collectible.Priest.MassHysteria && _button == null)
             {
-                //ShowButton();
+                ShowButton();
+            }
+        }
+
+        public void HandleRemoveFromHand(Card CurrentCard)
+        {
+            Log.Info(CurrentCard.FlavorText);
+            if (CurrentCard.Id == Collectible.Priest.MassHysteria && _button != null)
+            {
+                CloseButton();
             }
         }
 
         public void OnLoad()
         {
             // Triggered upon startup and when the user ticks the plugin on
+            HotKeyManager.RegisterHotkey(new HotKey(Keys.F3), new Action(OpenWebsite), "Open Mass Hysteria Sim");
+
             GameEvents.OnPlayerGet.Add(HandleAddToHand);
             GameEvents.OnPlayerPlayToHand.Add(HandleAddToHand);
             GameEvents.OnPlayerDraw.Add(HandleAddToHand);
+
+            GameEvents.OnPlayerHandDiscard.Add(HandleRemoveFromHand);
+            GameEvents.OnPlayerPlay.Add(HandleRemoveFromHand);
+
+            GameEvents.OnGameEnd.Add(CloseButton);
+            GameEvents.OnPlayerMulligan.Add(HandleRemoveFromHand);
+
+            if (!Core.Game.IsInMenu)
+            {
+                foreach (Entity CurrentCard in Core.Game.Player.Hand)
+                {
+                    if (CurrentCard.CardId == Collectible.Priest.MassHysteria && _button == null)
+                    {
+                        ShowButton();
+                    }
+                }
+            }
         }
 
         public void OnUnload()
@@ -100,17 +168,15 @@ namespace Mass_Hysteria_Simulator
 
         public void OnButtonPress()
         {
-            // ShowButton();
+            ToggleButton();
         }
 
         public void OpenWebsite()
         {
 
-            // Triggered when the user clicks your button in the plugin list
             if (Core.Game.IsMinionInPlay)
             {
                 string BaseURL = "https://mass-hysteria-sim.now.sh/";
-                // string BaseURL = "http://localhost:8080/";
                 string ExportString = "?";
 
                 try
@@ -142,7 +208,7 @@ namespace Mass_Hysteria_Simulator
             }
         }
 
-        public void ClickHandler(Object sender, System.EventArgs e)
+        public void MenuItemClick (Object sender, System.EventArgs e)
         {
             OpenWebsite();
         }
@@ -156,19 +222,20 @@ namespace Mass_Hysteria_Simulator
 
         public string Description => Name;
 
-        public string ButtonText => "LOLOLLO";
+        public string ButtonText => "Dont Click";
 
         public string Author => "AyyKamp";
 
-        public Version Version => new Version(1, 0, 3);
+        public Version Version => new Version(1, 2);
 
-        public MenuItem MenuItem {
+        public System.Windows.Controls.MenuItem MenuItem {
             get {
-                MenuItem mi = new MenuItem();
-                mi.Header = "Mass Hysteria Simulator";
-                mi.Click += ClickHandler;
+                System.Windows.Controls.MenuItem mi = new System.Windows.Controls.MenuItem
+                {
+                    Header = "Mass Hysteria Simulator"
+                };
+                mi.Click += MenuItemClick;
                 return mi;
-                //return new MenuItem("Mass Hysteria Simulator", ClickHandler);
             }
         }
 
